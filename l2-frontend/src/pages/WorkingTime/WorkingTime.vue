@@ -39,7 +39,7 @@
 
 <script setup lang="ts">
 import {
-  onMounted, ref, watch,
+  onMounted, ref,
 } from 'vue';
 import Treeselect from '@riophae/vue-treeselect';
 
