@@ -615,8 +615,9 @@ class EmployeeWorkingHoursSchedule(models.Model):
             current_hours.save()
         else:
             if type_work:
-                current_hours = EmployeeWorkingHoursSchedule(time_tracking_document_id=document.pk, employee_position_id=employee_position_id, day=date, start=None, end=None,
-                                                             work_day_status_id=type_work)
+                current_hours = EmployeeWorkingHoursSchedule(
+                    time_tracking_document_id=document.pk, employee_position_id=employee_position_id, day=date, start=None, end=None, work_day_status_id=type_work
+                )
             else:
                 current_hours = EmployeeWorkingHoursSchedule(time_tracking_document_id=document.pk, employee_position_id=employee_position_id, day=date, start=start_work,
                                                              end=end_work, work_day_status_id=None)
