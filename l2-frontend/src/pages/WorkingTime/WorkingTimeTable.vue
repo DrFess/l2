@@ -37,7 +37,7 @@
 
 <script setup lang="ts">
 import {
-  computed, getCurrentInstance, onMounted, ref, watch,
+  computed, ref, watch,
 } from 'vue';
 import { VeTable } from 'vue-easytable';
 import '@riophae/vue-treeselect/dist/vue-treeselect.css';
@@ -65,7 +65,6 @@ const props = defineProps({
     required: false,
   },
 });
-const root = getCurrentInstance().proxy.$root;
 
 const search = ref('');
 
@@ -142,7 +141,7 @@ const getColumns = () => {
       align: 'center',
       width: 95,
       isWeekend: weekend,
-      renderBodyCell: ({ row, column, rowIndex }, h) => h(
+      renderBodyCell: ({ row, column }, h) => h(
         DateCell,
         {
           props: {
