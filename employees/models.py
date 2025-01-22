@@ -600,8 +600,9 @@ class EmployeeWorkingHoursSchedule(models.Model):
 
         employee_position = EmployeePosition.objects.filter(pk=employee_position_id).first()
         document = TimeTrackingDocument.get_time_tracking_document(date, employee_position.department_id)
-        current_hours: EmployeeWorkingHoursSchedule = EmployeeWorkingHoursSchedule.objects.filter(time_tracking_document_id=document.pk, employee_position_id=employee_position_id,
-                                                                                                  day=date).first()
+        current_hours: EmployeeWorkingHoursSchedule = EmployeeWorkingHoursSchedule.objects.filter(
+            time_tracking_document_id=document.pk, employee_position_id=employee_position_id, day=date
+        ).first()
         if current_hours:
             if type_work:
                 current_hours.work_day_status = type_work
