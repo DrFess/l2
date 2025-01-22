@@ -197,6 +197,14 @@ def menu(request):
                     ],
                 },
                 {
+                    "url": '/ui/working-time',
+                    "title": "График рабочего времени",
+                    "nt": False,
+                    "access": [
+                        "График рабочего времени",
+                    ],
+                },
+                {
                     "url": '/ui/some-links',
                     "title": "Ccылки",
                     "nt": False,

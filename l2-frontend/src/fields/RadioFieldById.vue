@@ -52,6 +52,10 @@ export default {
       required: false,
       type: Boolean,
     },
+    startNull: {
+      required: false,
+      type: Boolean,
+    },
   },
   data() {
     return {
@@ -86,7 +90,7 @@ export default {
       this.$emit('modified', newVal);
     },
     fixVal() {
-      if ((!this.val || !this.variants.find(v => v.id === this.val)) && this.variants.length > 0) {
+      if ((!this.val || !this.variants.find(v => v.id === this.val)) && this.variants.length > 0 && !this.startNull) {
         // eslint-disable-next-line prefer-destructuring
         this.val = this.variants[0].id;
         this.changeValue(this.val);

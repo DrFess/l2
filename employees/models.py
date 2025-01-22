@@ -1,7 +1,13 @@
+import calendar
+import datetime
+
+import pytz
 from django.db import models
 from django.core.paginator import Paginator
 
+from employees.sql_func import get_employees_by_department, get_work_time_by_document
 from hospitals.models import Hospitals
+from laboratory.settings import TIME_ZONE
 from laboratory.utils import strfdatetime
 from slog.models import Log
 from users.models import DoctorProfile
@@ -306,6 +312,13 @@ class Department(models.Model):
         if departments.exists():
             raise ValueError('Отдел с таким названием уже существует')
 
+    @staticmethod
+    def get_active(hospital_id: int = None):
+        if not hospital_id:
+            hospital_id = Hospitals.objects.get(is_default=True)
+        departments = [{"id": department.pk, "label": department.name} for department in Department.objects.filter(is_active=True, hospital_id=hospital_id).order_by('name')]
+        return departments
+
     class Meta:
         verbose_name = 'Отдел'
         verbose_name_plural = 'Отделы'
@@ -466,6 +479,17 @@ class TimeTrackingDocument(models.Model):
             department_id=department_pk,
         ).save()
 
+    @staticmethod
+    def get_time_tracking_document(date_str, department_id):
+        date = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
+        year = date.year
+        month = date.month
+        first_date_month = datetime.date(year, month, 1)
+        length_month = calendar.monthrange(year, month)[1]
+        last_date_month = datetime.date(year, month, length_month)
+        document = TimeTrackingDocument.objects.filter(month__gte=first_date_month, month__lte=last_date_month, department_id=department_id).last()
+        return document
+
 
 class TypeCheckTimeTrackingDocument(models.Model):
     title = models.CharField(max_length=255, verbose_name='Наименование')
@@ -514,25 +538,92 @@ class TimeTrackingStatus(models.Model):
     raw_data = models.TextField(blank=True, null=True, help_text="Данные документа")
 
     class Meta:
-        verbose_name = "График-документ"
-        verbose_name_plural = "График-документы"
+        verbose_name = "График-документ-сохраненный"
+        verbose_name_plural = "График-документы-сохраненный"
 
 
 class EmployeeWorkingHoursSchedule(models.Model):
     time_tracking_document = models.ForeignKey(TimeTrackingDocument, null=True, blank=True, default=None, db_index=True, on_delete=models.SET_NULL)
     employee_position = models.ForeignKey(EmployeePosition, null=True, blank=True, db_index=True, default=None, on_delete=models.SET_NULL)
-    start = models.DateTimeField(verbose_name='Начало рабочего времени', help_text='дата-время начала')
-    end = models.DateTimeField(verbose_name='Конец рабочего времени', help_text='дата-время окончания')
+    start = models.DateTimeField(verbose_name='Начало рабочего времени', help_text='дата-время начала', null=True, blank=True)
+    end = models.DateTimeField(verbose_name='Конец рабочего времени', help_text='дата-время окончания', null=True, blank=True)
     day = models.DateField(verbose_name='Дата учета времени', null=True, blank=True, default=None, db_index=True, help_text='дата')
     work_day_status = models.ForeignKey(WorkDayStatus, null=True, blank=True, default=None, db_index=True, on_delete=models.SET_NULL, verbose_name='Тип')
     user_saved = models.ForeignKey('users.DoctorProfile', on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Профиль пользователя сохранившего запись')
 
-    def __str__(self):
-        return f'{self.employee_position.employee.__str__()} {self.start} - {self.end}'
-
     class Meta:
         verbose_name = "Сотрудник - фактическое время за дату"
         verbose_name_plural = "Сотрудники - фактическое время за дату"
+
+    def __str__(self):
+        return f'{self.employee_position.employee.__str__()} {self.start} - {self.end}'
+
+    @staticmethod
+    def get_employees_template(year: int, month: int, last_date_month: int, department_id: int) -> dict:
+        template_days = {datetime.date(year, month, day).strftime('%Y-%m-%d'): {"startWorkTime": "", "endWorkTime": "", "type": ""} for day in range(1, last_date_month + 1)}
+        employees = get_employees_by_department(department_id)
+        employees_template = {}
+        for employee in employees:
+            employees_template[employee.employee_position_id] = template_days.copy()
+            employees_template[employee.employee_position_id].update(
+                {
+                    "employeePositionId": employee.employee_position_id,
+                    "fio": f'{employee.family} {employee.name[0]}.{employee.patronymic[0] + "." if employee.patronymic else ""}',
+                    "position": employee.position_name,
+                    "bidType": 'осн',
+                    "normMonth": '178',
+                    "normDay": "8",
+                }
+            )
+        return employees_template
+
+    @staticmethod
+    def get_work_time(year: int, month: int, department_id: int):
+        first_date_month = datetime.date(year, month, 1)
+        length_month = calendar.monthrange(year, month)[1]
+        last_date_month = datetime.date(year, month, length_month)
+        template_employee = EmployeeWorkingHoursSchedule.get_employees_template(year, month, length_month, department_id)
+        document = TimeTrackingDocument.objects.filter(month__gte=first_date_month, month__lte=last_date_month, department_id=department_id).last()
+        if document:
+            employees_work_time = get_work_time_by_document(document.pk)
+            for work_day in employees_work_time:
+                work_time = template_employee[work_day.employee_position_id][work_day.start.strftime('%Y-%m-%d')].copy()
+                work_time["startWorkTime"] = work_day.start.astimezone(pytz.timezone(TIME_ZONE)).strftime('%H:%M')
+                work_time["endWorkTime"] = work_day.end.astimezone(pytz.timezone(TIME_ZONE)).strftime('%H:%M')
+                work_time["type"] = work_day.work_day_status_id
+                template_employee[work_day.employee_position_id][work_day.start.strftime('%Y-%m-%d')] = work_time
+        result = [value for value in template_employee.values()]
+        return result
+
+    @staticmethod
+    def update_time(start_work, end_work, type_work, employee_position_id, date):
+
+        employee_position = EmployeePosition.objects.filter(pk=employee_position_id).first()
+        document = TimeTrackingDocument.get_time_tracking_document(date, employee_position.department_id)
+        current_hours: EmployeeWorkingHoursSchedule = EmployeeWorkingHoursSchedule.objects.filter(
+            time_tracking_document_id=document.pk, employee_position_id=employee_position_id, day=date
+        ).first()
+        if current_hours:
+            if type_work:
+                current_hours.work_day_status = type_work
+                current_hours.start = None
+                current_hours.end = None
+            else:
+                current_hours.work_day_status = None
+                current_hours.start = start_work
+                current_hours.end = end_work
+            current_hours.save()
+        else:
+            if type_work:
+                current_hours = EmployeeWorkingHoursSchedule(
+                    time_tracking_document_id=document.pk, employee_position_id=employee_position_id, day=date, start=None, end=None, work_day_status_id=type_work
+                )
+            else:
+                current_hours = EmployeeWorkingHoursSchedule(
+                    time_tracking_document_id=document.pk, employee_position_id=employee_position_id, day=date, start=start_work, end=end_work, work_day_status_id=None
+                )
+            current_hours.save()
+        return {"ok": True, "message": ""}
 
 
 class CashRegister(models.Model):
