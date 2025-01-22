@@ -565,14 +565,16 @@ class EmployeeWorkingHoursSchedule(models.Model):
         employees_template = {}
         for employee in employees:
             employees_template[employee.employee_position_id] = template_days.copy()
-            employees_template[employee.employee_position_id].update({
-                "employeePositionId": employee.employee_position_id,
-                "fio": f'{employee.family} {employee.name[0]}.{employee.patronymic[0] + "." if employee.patronymic else ""}',
-                "position": employee.position_name,
-                "bidType": 'осн',
-                "normMonth": '178',
-                "normDay": "8",
-            })
+            employees_template[employee.employee_position_id].update(
+                {
+                    "employeePositionId": employee.employee_position_id,
+                    "fio": f'{employee.family} {employee.name[0]}.{employee.patronymic[0] + "." if employee.patronymic else ""}',
+                    "position": employee.position_name,
+                    "bidType": 'осн',
+                    "normMonth": '178',
+                    "normDay": "8",
+                }
+            )
         return employees_template
 
     @staticmethod
