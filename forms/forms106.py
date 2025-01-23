@@ -1182,7 +1182,7 @@ def form_02(request_data):
 
     transfers_list[-1]['палата N'] = f"{hosp_extract_data_by_title.get('room_num', '')}<br/>"
     result = [f"{k} {v} " for i in transfers_list for k, v in i.items()]
-    transfers = (" ".join(str(x) for x in result))
+    transfers = " ".join(str(x) for x in result)
 
     age_patinet = direction_obj.client.individual.age_s(direction=direction_obj)
     space_symbol = "&nbsp;"
