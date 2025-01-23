@@ -10,7 +10,6 @@ from copy import deepcopy
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT, TA_RIGHT
 from reportlab.lib.colors import black
 
-from api.stationar.sql_func import get_result_value_iss
 from appconf.manager import SettingManager
 from directions.models import Napravleniya, Issledovaniya
 from directory.models import Fractions

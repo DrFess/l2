@@ -3087,6 +3087,9 @@ def last_field_result(request):
         field_pks = [data[1]]
         logical_or = True
         result = field_get_link_data(field_pks, client_pk, logical_or, logical_and, logical_group_or, use_current_year=True)
+    elif request_data["fieldPk"].find('%current_date') != -1:
+        current_date = current_time(only_date=True).strftime(("%d.%m.%Y"))
+        result = {"value": current_date}
     elif request_data["fieldPk"].find('%months_ago#') != -1:
         data = request_data["fieldPk"].split('#')
         if len(data) < 3:
