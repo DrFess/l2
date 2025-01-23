@@ -1114,6 +1114,7 @@ def form_02(request_data):
     hosp_depart = hosp_nums_obj[0].get("research_title")
 
     hosp_extract_data = hosp_extract_get_data_by_cda(hosp_last_num)
+    hosp_extract_data_by_title = hosp_extract_get_data(hosp_last_num)
 
     # Получить отделение - из названия услуги или самого главного направления
     first_bed_profile = hosp_nums_obj[0].get("research_title")
@@ -1158,16 +1159,30 @@ def form_02(request_data):
     # получить даные из переводного эпикриза: Дата перевода, Время перевода, в какое отделение переведен
     # у каждого hosp-направления найти подчиненное эпикриз Перевод*
 
-    transfers_data = hosp_get_transfers_data(hosp_nums_obj)
     if not first_hosp_depart:
         first_hosp_depart = hosp_depart
-    transfers = f"Отделение <u>{first_hosp_depart}</u>; профиль коек {first_bed_profile} палата N _______"
-    for i in transfers_data:
-        transfers = (
-            f"{transfers}<br/> Переведен в отделение <u>{i['transfer_depart']}</u>; "
-            f"профиль коек <u>{i['transfer_research_title']}</u> палата N____<br/>Дата и время перевода {i['date_transfer_value']} "
-            f"время:{i['time_transfer_value']};<br/>"
-        )
+    transfers_data = hosp_get_transfers_data(hosp_nums_obj)
+
+    step = 0
+    transfers_list = [{'Наименование отделения': f'<u>{first_hosp_depart}</u>', 'профиль коек': first_bed_profile, 'палата N': ''}]
+    if len(transfers_data) > 0:
+        for i in transfers_data:
+            transfers_list.append(
+                {
+                    'Переведен в отделение': f'<u>{i["transfer_depart"]}</u>;',
+                    'профиль коек': f'<u>{i["transfer_research_title"]}</u>',
+                    'палата N': '',
+                    'Дата и время перевода': f'{i["date_transfer_value"]}',
+                    'время': f'{i["time_transfer_value"]};<br/>',
+                }
+            )
+            step += 1
+            transfers_list[step - 1]['палата N'] = f"{i['src_depart_chamber']}<br/>"
+
+    transfers_list[-1]['палата N'] = f"{hosp_extract_data_by_title.get('room_num', '')}<br/>"
+    result = [f"{k} {v} " for i in transfers_list for k, v in i.items()]
+    transfers = " ".join(str(x) for x in result)
+
     age_patinet = direction_obj.client.individual.age_s(direction=direction_obj)
     space_symbol = "&nbsp;"
     title_page = [
@@ -1366,7 +1381,6 @@ def check_section_param(objs, styles_obj, section, tbl_specification, cda_titles
         if len(data_cda) < len(cda_titles_sec):
             data_cda = [*data_cda, *["" for count in range(difference)]]
         data_cda = check_diagnos_row_is_dict(data_cda)
-
         objs.append(Paragraph(section.get("text").format(*data_cda), styles_obj[section.get("style")]))
     return objs
 

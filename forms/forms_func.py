@@ -772,6 +772,7 @@ def hosp_extract_get_data(hosp_last_num):
         'Куда переведен',
         'Отметка о выдаче листка нетрудоспособности',
         'Отметка о выдаче листка нетрудоспособности через врачебную комиссию',
+        'Палата',
     ]
     titles_field.extend(titles_field_diag)
 
@@ -818,7 +819,7 @@ def hosp_extract_get_data(hosp_last_num):
                 days_count = str(i[2])
             if i[3] == 'Заведующий отделением':
                 manager_depart = str(i[2])
-            if i[3] == 'Палата №':
+            if i[3] == 'Палата №' or i[3] == 'Палата':
                 room_num = str(i[2])
             if i[3] == "Основное заболевание код по МКБ":
                 final_diagnos_mkb_data = i[2]
@@ -1061,11 +1062,12 @@ def hosp_get_clinical_diagnos(hosp_obj):
 
 
 def hosp_get_transfers_data(hosp_nums_obj):
-    titles_field = ['Дата перевода', 'Время перевода']
-    date_transfer_value, time_transfer_value = '', ''
+    titles_field = ['Дата перевода', 'Время перевода', 'Палата', 'Палата №']
+    date_transfer_value, time_transfer_value, src_depart_chamber = '', '', ''
     transfers = []
     list_values = None
     for i in range(len(hosp_nums_obj)):
+        date_transfer_value, time_transfer_value, src_depart_chamber = '', '', ''
         if i == 0:
             continue
 
@@ -1091,9 +1093,18 @@ def hosp_get_transfers_data(hosp_nums_obj):
                 if i[3] == 'Время перевода':
                     time_transfer_value = i[2]
                     continue
-
+                if i[3] == 'Палата' or i[3] == 'Палата №':
+                    if not src_depart_chamber:
+                        src_depart_chamber = i[2]
+                        continue
         transfers.append(
-            {'transfer_research_title': transfer_research_title, 'transfer_depart': transfer_depart, 'date_transfer_value': date_transfer_value, 'time_transfer_value': time_transfer_value}
+            {
+                'transfer_research_title': transfer_research_title,
+                'transfer_depart': transfer_depart,
+                'date_transfer_value': date_transfer_value,
+                'time_transfer_value': time_transfer_value,
+                'src_depart_chamber': src_depart_chamber,
+            }
         )
 
     return transfers
