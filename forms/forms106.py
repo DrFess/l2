@@ -1178,7 +1178,7 @@ def form_02(request_data):
                 }
             )
             step += 1
-            transfers_list[step-1]['палата N'] = f"{i['src_depart_chamber']}<br/>"
+            transfers_list[step - 1]['палата N'] = f"{i['src_depart_chamber']}<br/>"
 
     transfers_list[-1]['палата N'] = f"{hosp_extract_data_by_title.get('room_num', '')}<br/>"
     result = [f"{k} {v} " for i in transfers_list for k, v in i.items()]
