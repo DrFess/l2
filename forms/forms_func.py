@@ -1103,7 +1103,7 @@ def hosp_get_transfers_data(hosp_nums_obj):
                 'transfer_depart': transfer_depart,
                 'date_transfer_value': date_transfer_value,
                 'time_transfer_value': time_transfer_value,
-                'src_depart_chamber': src_depart_chamber
+                'src_depart_chamber': src_depart_chamber,
             }
         )
 
