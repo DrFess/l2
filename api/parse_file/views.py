@@ -114,6 +114,7 @@ def gen_commercial_offer(request):
     starts = False
     counts_research = {}
     patients = []
+    fio, sex, harmful_factor, born, position = "", "", "", "", ""
 
     for row in ws.rows:
         cells = [str(x.value) for x in row]
@@ -149,7 +150,6 @@ def gen_commercial_offer(request):
                 else:
                     counts_research[r] = 1
             patients.append({"fio": cells[fio], "born": born_data, "harmful_factor": cells[harmful_factor], "position": cells[position], "researches": researches_data, "age": age})
-            print(patients)
 
     price_data = PriceCoast.objects.filter(price_name__id=selected_price, research_id__in=list(counts_research.keys()))
     data_price = [{"title": k.research.title, "code": k.research.code, "count": counts_research[k.research.pk], "coast": k.coast} for k in price_data]
