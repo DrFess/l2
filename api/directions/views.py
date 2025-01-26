@@ -2818,7 +2818,7 @@ def last_field_result(request):
     client_pk = request_data.get("clientPk")
     if not client_pk:
         client_pk = request_data.get("card_pk")
-    logical_or, logical_and, logical_group_or = False, False, False
+    logical_or, logical_and, logical_group_or, search_by_cda = False, False, False, False
     field_is_link, field_is_aggregate_operation, field_is_aggregate_proto_description = False, False, False
     field_pks, operations_data, aggregate_data, is_diag_table = None, None, None, None
     result = None
@@ -3114,16 +3114,23 @@ def last_field_result(request):
         else:
             if data[1] == "cda":
                 # %root_hosp#cda#code
+                search_by_cda = True
                 cda_code = data[2]
                 cda_id = list(CdaFields.get_cda_id_by_codes([int(cda_code)]))
-                paraclinic_field = ParaclinicInputField.objects.filter(cda_option_id=cda_id[0]).first()
-                field_pks = [paraclinic_field.pk]
+                paraclinic_field = ParaclinicInputField.objects.filter(cda_option_id__in=cda_id).values_list("pk", flat=True)
+                field_pks = list(paraclinic_field)
+                field_pks = [str(i) for i in field_pks]
+                if len(data) == 4 and data[3] == "diagTable":
+                    is_diag_table = True
             else:
                 field_pks = [data[1]]
             logical_or = True
             hosp_dirs = hosp_get_hosp_direction(num_dir)
             parent_iss = [i['issledovaniye'] for i in hosp_dirs]
-            result = field_get_link_data(field_pks, client_pk, logical_or, logical_and, logical_group_or, use_root_hosp=True, parent_iss=tuple(parent_iss))
+            if is_diag_table:
+                result = field_get_link_diag_table(field_pks, client_pk, parent_iss=tuple(parent_iss))
+            else:
+                result = field_get_link_data(field_pks, client_pk, logical_or, logical_and, logical_group_or, use_root_hosp=True, parent_iss=tuple(parent_iss), search_by_cda=search_by_cda)
     elif request_data["fieldPk"].find('%control_param#') != -1:
         # %control_param#code#period#find_val
         data = request_data["fieldPk"].split('#')
@@ -3170,10 +3177,10 @@ def last_field_result(request):
         field_is_link = True
         is_diag_table = request_data.get("isDiagTable")
 
-    if field_is_link and is_diag_table:
+    if field_is_link and is_diag_table and not result:
         parent_iss = Napravleniya.objects.get(pk=num_dir).parent_id
         result = field_get_link_diag_table(field_pks, client_pk, parent_iss=(parent_iss,))
-    elif field_is_link:
+    elif field_is_link and not result:
         result = field_get_link_data(field_pks, client_pk, logical_or, logical_and, logical_group_or)
 
     elif field_is_aggregate_operation:
@@ -3189,7 +3196,8 @@ def get_current_direction(current_iss):
 
 
 def field_get_link_data(
-    field_pks, client_pk, logical_or, logical_and, logical_group_or, use_current_year=False, months_ago='-1', use_root_hosp=False, use_current_hosp=False, parent_iss=(-1,)
+        field_pks, client_pk, logical_or, logical_and, logical_group_or, use_current_year=False, months_ago='-1', use_root_hosp=False, use_current_hosp=False, parent_iss=(-1,),
+        search_by_cda=False
 ):
     result, value, temp_value = None, None, None
     for current_field_pk in field_pks:
@@ -3219,7 +3227,7 @@ def field_get_link_data(
                         value = normalize_date(value)
                     if logical_or_inside:
                         result = {"directicheck_use_current_hosp(on": row[1], "date": row[4], "value": value}
-                        if value:
+                        if value and not search_by_cda:
                             break
                     if logical_and_inside:
                         r = ParaclinicInputField.objects.get(pk=field_pk)
@@ -3231,7 +3239,7 @@ def field_get_link_data(
                             if value:
                                 result["value"] = f"{temp_value} {titles} - {value};"
 
-        if logical_group_or and temp_value or logical_or_inside and value:
+        if logical_group_or and temp_value or logical_or_inside and value and not search_by_cda:
             break
     return result
 
@@ -3241,7 +3249,7 @@ def field_get_link_diag_table(field_pks, client_pk, parent_iss=(-1,), use_curren
     for current_field_pk in field_pks:
         group_fields = [current_field_pk]
         for field_pk in group_fields:
-            if field_pk.isdigit():
+            if current_field_pk.isdigit():
                 if use_current_year:
                     c_year = current_year()
                     c_year = f"{c_year}-01-01 00:00:00"
@@ -3760,7 +3768,8 @@ def tubes_for_get(request):
                 if vrpk not in has_rels:
                     with transaction.atomic():
                         try:
-                            if direction.hospital and direction.hospital.use_self_generate_tube:
+                            # if direction.hospital and direction.hospital.use_self_generate_tube:
+                            if direction.hospital:
                                 hospital_for_generator_tube = direction.hospital
                             elif direction.hospital and not direction.external_executor_hospital:
                                 hospital_for_generator_tube = direction.hospital

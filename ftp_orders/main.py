@@ -35,7 +35,7 @@ from directory.sql_func import get_fsli_fractions_by_research_id
 from ftp_orders.sql_func import get_tubesregistration_id_by_iss
 from hospitals.models import Hospitals
 from directory.models import Researches, Fractions
-from laboratory.settings import BASE_DIR, NEED_RECIEVE_TUBE_TO_PUSH_ORDER, FTP_SETUP_TO_SEND_HL7_BY_RESEARCHES, OWN_SETUP_TO_SEND_FTP_EXECUTOR, FTP_PATH_TO_SAVE
+from laboratory.settings import BASE_DIR, NEED_RECIEVE_TUBE_TO_PUSH_ORDER, FTP_SETUP_TO_SEND_HL7_BY_RESEARCHES, OWN_SETUP_TO_SEND_FTP_EXECUTOR, FTP_PATH_TO_SAVE, FTP_PATH_TO_SAVE_ERROR_FILE
 from laboratory.utils import current_time
 from slog.models import Log
 from users.models import DoctorProfile
@@ -229,7 +229,10 @@ class FTPConnection:
         if len(pid.PID_18.value) > 1:
             document_data = pid.PID_18.value.split("^")
             if document_data[2] == "Полис":
-                enp = document_data[4]
+                if len(document_data) > 4:
+                    enp = document_data[4]
+                else:
+                    enp = ""
         adds_data = pid.to_er7().split("|")[13].split("~")
 
         phone = adds_data[0] if adds_data[0] else ""
@@ -424,9 +427,21 @@ class FTPConnection:
         for obx in obxes:
             tmp_fractions = fractions.copy()
             if (obx.OBX.obx_3.obx_3_1.value).lower() == "pdf":
-                pdf_base_64 = obx.OBX.obx_5.obx_5_5.value
-                base64_bytes = pdf_base_64.encode('utf-8')
-                data = ContentFile(base64.b64decode(base64_bytes))
+                try:
+                    pdf_base_64 = obx.OBX.obx_5.obx_5_5.value
+                    base64_bytes = pdf_base_64.encode('utf-8')
+                    data = ContentFile(base64.b64decode(base64_bytes))
+                except:
+                    Log.log(
+                        key=tube_number,
+                        type=190006,
+                        body={"tube": tube_number, "internal_code": internal_code, "researchTile": research_title, "file": file, "reason": "base64 ошибка"},
+                        user=None,
+                    )
+                    self.copy_file(file, FTP_PATH_TO_SAVE_ERROR_FILE)
+                    self.delete_file(file)
+                    return
+
                 if IssledovaniyaFiles.objects.filter(issledovaniye=iss).exists():
                     iss_files = IssledovaniyaFiles.objects.filter(issledovaniye=iss)
                     for iss_file in iss_files:

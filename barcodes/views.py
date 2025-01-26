@@ -160,7 +160,8 @@ def tubes(request, direction_implict_id=None):
                         if not ntube:
                             with transaction.atomic():
                                 try:
-                                    if tmp2.hospital and tmp2.hospital.use_self_generate_tube:
+                                    # if tmp2.hospital and tmp2.hospital.use_self_generate_tube:
+                                    if tmp2.hospital:
                                         hospital_for_generator_tube = tmp2.hospital
                                     elif tmp2.hospital and not tmp2.external_executor_hospital:
                                         hospital_for_generator_tube = tmp2.hospital
