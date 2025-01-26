@@ -114,6 +114,7 @@ def gen_commercial_offer(request):
     starts = False
     counts_research = {}
     patients = []
+    fio, sex, harmful_factor, born, position = "", "", "", "", ""
 
     for row in ws.rows:
         cells = [str(x.value) for x in row]

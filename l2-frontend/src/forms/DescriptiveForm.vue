@@ -563,6 +563,18 @@ export default {
       type: String,
       required: false,
     },
+    price_category: {
+      type: Number,
+      required: false,
+    },
+    paid_fin_source: {
+      type: Boolean,
+      required: false,
+    },
+    is_gistology: {
+      type: Boolean,
+      required: false,
+    },
   },
   data() {
     return {
