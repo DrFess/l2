@@ -3196,8 +3196,17 @@ def get_current_direction(current_iss):
 
 
 def field_get_link_data(
-        field_pks, client_pk, logical_or, logical_and, logical_group_or, use_current_year=False, months_ago='-1', use_root_hosp=False, use_current_hosp=False, parent_iss=(-1,),
-        search_by_cda=False
+    field_pks,
+    client_pk,
+    logical_or,
+    logical_and,
+    logical_group_or,
+    use_current_year=False,
+    months_ago='-1',
+    use_root_hosp=False,
+    use_current_hosp=False,
+    parent_iss=(-1,),
+    search_by_cda=False,
 ):
     result, value, temp_value = None, None, None
     for current_field_pk in field_pks:
