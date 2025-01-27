@@ -42,7 +42,7 @@ from django.utils import timezone
 from api import sql_func
 from api.dicom import search_dicom_study, check_server_port, check_dicom_study_instance_uid
 from api.patients.views import save_dreg
-from api.sql_func import get_fraction_result, get_field_result
+from api.sql_func import get_fraction_result, get_field_result, get_field_result_by_cda
 from api.stationar.stationar_func import forbidden_edit_dir, desc_to_data
 from api.views import get_reset_time_vars
 from appconf.manager import SettingManager
@@ -3112,6 +3112,7 @@ def last_field_result(request):
         logical_or = True
         hosp_dirs = hosp_get_hosp_direction(num_dir)
         parent_iss = [i['issledovaniye'] for i in hosp_dirs]
+        result = None
         if len(data) < 2:
             result = {"value": ""}
         else:
@@ -3122,15 +3123,18 @@ def last_field_result(request):
                 cda_id = list(CdaFields.get_cda_id_by_codes([int(cda_code)]))
                 paraclinic_field = ParaclinicInputField.objects.filter(cda_option_id__in=cda_id).values_list("pk", flat=True)
                 field_pks = list(paraclinic_field)
-                field_pks = [str(i) for i in field_pks]
+                field_pks = [i for i in field_pks]
                 if len(data) == 4 and data[3] == "diagTable":
                     is_diag_table = True
+                if not is_diag_table and not result:
+                    result = field_get_link_data_by_cda(tuple(field_pks), client_pk, parent_iss=tuple(parent_iss))
             else:
                 field_pks = [data[1]]
 
-            if is_diag_table:
+            if is_diag_table and not result:
+                field_pks = [str(i) for i in field_pks]
                 result = field_get_link_diag_table(field_pks, client_pk, parent_iss=tuple(parent_iss))
-            else:
+            if not result and not search_by_cda:
                 result = field_get_link_data(field_pks, client_pk, logical_or, logical_and, logical_group_or, use_root_hosp=True, parent_iss=tuple(parent_iss), search_by_cda=search_by_cda)
     elif request_data["fieldPk"].find('%control_param#') != -1:
         # %control_param#code#period#find_val
@@ -3178,7 +3182,7 @@ def last_field_result(request):
         field_is_link = True
         is_diag_table = request_data.get("isDiagTable")
 
-    if field_is_link and is_diag_table and not result:
+    if field_is_link and is_diag_table and not result and not search_by_cda:
         parent_iss = Napravleniya.objects.get(pk=num_dir).parent_id
         result = field_get_link_diag_table(field_pks, client_pk, parent_iss=(parent_iss,))
     elif field_is_link and not result:
@@ -3257,60 +3261,17 @@ def field_get_link_data(
 def field_get_link_data_by_cda(
     field_pks,
     client_pk,
-    logical_or,
-    logical_and,
-    logical_group_or,
-    use_current_year=False,
-    months_ago='-1',
-    use_root_hosp=False,
-    use_current_hosp=False,
     parent_iss=(-1,),
-    search_by_cda=False,
 ):
     result, value, temp_value = None, None, None
-    for current_field_pk in field_pks:
-        group_fields = [current_field_pk]
-        logical_and_inside = logical_and
-        logical_or_inside = logical_or
-        if current_field_pk.find('@') > -1:
-            group_fields = get_input_fields_by_group(current_field_pk)
-            logical_and_inside = True
-            logical_or_inside = False
-        for field_pk in group_fields:
-            if field_pk.isdigit():
-                if use_current_year:
-                    c_year = current_year()
-                    c_year = f"{c_year}-01-01 00:00:00"
-                else:
-                    c_year = "1900-01-01 00:00:00"
-                use_parent_iss = '-1'
-                if use_root_hosp or use_current_hosp:
-                    use_parent_iss = '1'
-                rows = get_field_result(client_pk, int(field_pk), count=1, current_year=c_year, months_ago=months_ago, parent_iss=parent_iss, use_parent_iss=use_parent_iss)
-                if rows:
-                    row = rows[0]
-                    value = row[5]
-                    match = re.fullmatch(r'\d{4}-\d\d-\d\d', value)
-                    if match:
-                        value = normalize_date(value)
-                    if logical_or_inside:
-                        result = {"directicheck_use_current_hosp(on": row[1], "date": row[4], "value": value}
-                        if value and not search_by_cda:
-                            break
-                    if logical_and_inside:
-                        r = ParaclinicInputField.objects.get(pk=field_pk)
-                        titles = r.get_title()
-                        if result is None:
-                            result = {"direction": row[1], "date": row[4], "value": value}
-                        else:
-                            temp_value = result.get('value', ' ')
-                            if value:
-                                result["value"] = f"{temp_value} {titles} - {value};"
-
-        if logical_group_or and temp_value or logical_or_inside and value and not search_by_cda:
-            break
-    return result
-
+    rows = get_field_result_by_cda(client_pk, field_pks, count=1, parent_iss=parent_iss)
+    if rows:
+        for i in rows:
+            value = i.value
+            match = re.fullmatch(r'\d{4}-\d\d-\d\d', value)
+            if match:
+                value = normalize_date(value)
+    return {"value": value}
 
 def field_get_link_diag_table(field_pks, client_pk, parent_iss=(-1,), use_current_year=False, months_ago='-1', use_root_hosp=False, use_current_hosp=True):
     result = None

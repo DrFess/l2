@@ -137,6 +137,48 @@ def get_field_result(client_id, field_id, count=1, current_year='1900-01-01 00:0
     return row
 
 
+def get_field_result_by_cda(client_id, field_ids, count=1, parent_iss=-1,):
+    """
+    на входе: id-поля, id-карты,
+    выход: последний результат поля
+    :return:
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT 
+            directions_napravleniya.client_id, 
+            directions_issledovaniya.napravleniye_id,   
+            directions_issledovaniya.research_id, 
+            directions_issledovaniya.time_confirmation AT TIME ZONE %(tz)s as time_confirmation,
+            to_char(directions_issledovaniya.time_confirmation AT TIME ZONE %(tz)s, 'DD.MM.YYYY') as date_confirm,
+            directions_paraclinicresult.value, 
+            directions_paraclinicresult.field_id,
+            directions_napravleniya.parent_id
+            FROM directions_issledovaniya
+            LEFT JOIN directions_napravleniya 
+            ON directions_issledovaniya.napravleniye_id=directions_napravleniya.id
+            LEFT JOIN directions_paraclinicresult
+            ON directions_issledovaniya.id=directions_paraclinicresult.issledovaniye_id
+            WHERE directions_napravleniya.client_id = %(client_p)s
+            and directions_paraclinicresult.field_id in %(field_ids)s
+            and directions_issledovaniya.time_confirmation is not NULL
+            AND directions_napravleniya.parent_id in %(parent_iss)s
+            ORDER BY directions_issledovaniya.time_confirmation DESC LIMIT %(count_p)s
+            """,
+            params={
+                'client_p': client_id,
+                'field_ids': field_ids,
+                'count_p': count,
+                'tz': TIME_ZONE,
+                'parent_iss': parent_iss,
+            },
+        )
+
+        row = namedtuplefetchall(cursor)
+    return row
+
+
 def users_by_group(title_groups, hosp_id):
     with connection.cursor() as cursor:
         cursor.execute(
