@@ -3109,6 +3109,9 @@ def last_field_result(request):
             result = field_get_link_data(field_pks, client_pk, logical_or, logical_and, logical_group_or, use_current_hosp=True, parent_iss=(parent_iss,))
     elif request_data["fieldPk"].find('%root_hosp') != -1:
         data = request_data["fieldPk"].split('#')
+        logical_or = True
+        hosp_dirs = hosp_get_hosp_direction(num_dir)
+        parent_iss = [i['issledovaniye'] for i in hosp_dirs]
         if len(data) < 2:
             result = {"value": ""}
         else:
@@ -3124,9 +3127,7 @@ def last_field_result(request):
                     is_diag_table = True
             else:
                 field_pks = [data[1]]
-            logical_or = True
-            hosp_dirs = hosp_get_hosp_direction(num_dir)
-            parent_iss = [i['issledovaniye'] for i in hosp_dirs]
+
             if is_diag_table:
                 result = field_get_link_diag_table(field_pks, client_pk, parent_iss=tuple(parent_iss))
             else:
@@ -3196,6 +3197,64 @@ def get_current_direction(current_iss):
 
 
 def field_get_link_data(
+    field_pks,
+    client_pk,
+    logical_or,
+    logical_and,
+    logical_group_or,
+    use_current_year=False,
+    months_ago='-1',
+    use_root_hosp=False,
+    use_current_hosp=False,
+    parent_iss=(-1,),
+    search_by_cda=False,
+):
+    result, value, temp_value = None, None, None
+    for current_field_pk in field_pks:
+        group_fields = [current_field_pk]
+        logical_and_inside = logical_and
+        logical_or_inside = logical_or
+        if current_field_pk.find('@') > -1:
+            group_fields = get_input_fields_by_group(current_field_pk)
+            logical_and_inside = True
+            logical_or_inside = False
+        for field_pk in group_fields:
+            if field_pk.isdigit():
+                if use_current_year:
+                    c_year = current_year()
+                    c_year = f"{c_year}-01-01 00:00:00"
+                else:
+                    c_year = "1900-01-01 00:00:00"
+                use_parent_iss = '-1'
+                if use_root_hosp or use_current_hosp:
+                    use_parent_iss = '1'
+                rows = get_field_result(client_pk, int(field_pk), count=1, current_year=c_year, months_ago=months_ago, parent_iss=parent_iss, use_parent_iss=use_parent_iss)
+                if rows:
+                    row = rows[0]
+                    value = row[5]
+                    match = re.fullmatch(r'\d{4}-\d\d-\d\d', value)
+                    if match:
+                        value = normalize_date(value)
+                    if logical_or_inside:
+                        result = {"directicheck_use_current_hosp(on": row[1], "date": row[4], "value": value}
+                        if value and not search_by_cda:
+                            break
+                    if logical_and_inside:
+                        r = ParaclinicInputField.objects.get(pk=field_pk)
+                        titles = r.get_title()
+                        if result is None:
+                            result = {"direction": row[1], "date": row[4], "value": value}
+                        else:
+                            temp_value = result.get('value', ' ')
+                            if value:
+                                result["value"] = f"{temp_value} {titles} - {value};"
+
+        if logical_group_or and temp_value or logical_or_inside and value and not search_by_cda:
+            break
+    return result
+
+
+def field_get_link_data_by_cda(
     field_pks,
     client_pk,
     logical_or,
