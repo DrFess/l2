@@ -1,32 +1,47 @@
 <template>
-  <Treeselect
-    :multiple="false"
-    :disable-branch-nodes="true"
-    class="treeselect-wide treeselect-34px"
-    :async="true"
-    :append-to-body="true"
-    :clearable="true"
-    :disabled="disabled"
-    :value="content"
-    :z-index="5001"
-    placeholder="Диагноз (МКБ 10)"
-    :load-options="loadOptions"
-    loading-text="Загрузка"
-    no-results-text="Не найдено"
-    search-prompt-text="Начните писать для поиска"
-    :cache-options="false"
-    open-direction="top"
-    :open-on-focus="true"
-    @select="selectValue"
-    @input="input"
-  >
-    <div
-      slot="value-label"
-      slot-scope="{ node }"
+  <div class="input-group">
+    <button
+      v-if="isStaticLink"
+      v-tippy="{ placement: 'bottom', arrow: true }"
+      class="btn btn-block btn-blue-nb nbr"
+      :class="{ btn_color: not_autoload_result }"
+      title="Загрузить данные"
+      @click="loadLast"
     >
-      {{ node.raw.label || node.raw.id }}
-    </div>
-  </Treeselect>
+      <i
+        class="fa fa-circle"
+        style="font-size:10px"
+      />
+    </button>
+    <Treeselect
+      :multiple="false"
+      :disable-branch-nodes="true"
+      class="treeselect-wide treeselect-34px treeselect-nbr"
+      :async="true"
+      :append-to-body="true"
+      :clearable="true"
+      :disabled="disabled"
+      :value="content"
+      :z-index="5001"
+      placeholder="Диагноз (МКБ 10)"
+      :load-options="loadOptions"
+      loading-text="Загрузка"
+      no-results-text="Не найдено"
+      search-prompt-text="Начните писать для поиска"
+      :cache-options="false"
+      open-direction="top"
+      :open-on-focus="true"
+      @select="selectValue"
+      @input="input"
+    >
+      <div
+        slot="value-label"
+        slot-scope="{ node }"
+      >
+        {{ node.raw.label || node.raw.id }}
+      </div>
+    </Treeselect>
+  </div>
 </template>
 
 <script lang="ts">

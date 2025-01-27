@@ -27,7 +27,7 @@
                 v-tippy
                 class="btn btn-blue-nb nbr"
                 title="Загрузить данные"
-                @click="loadLastDiadnoseResult"
+                @click="loadLastDiagnoseResult"
               >
                 <i
                   class="fa fa-circle"
@@ -361,7 +361,7 @@ export default {
   },
   mounted() {
     this.checkTable();
-    this.loadLastDiadnoseResult();
+    this.loadLastDiagnoseResult();
     this.$root.$on('checkTables', () => setTimeout(() => this.checkTable(), 50));
   },
   beforeDestroy() {
@@ -442,7 +442,7 @@ export default {
 
       this.validate();
     },
-    loadLastDiadnoseResult() {
+    loadLastDiagnoseResult() {
       this.loadLast();
       this.loadLast();
     },
