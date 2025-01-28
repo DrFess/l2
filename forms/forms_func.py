@@ -947,7 +947,7 @@ def parse_accompanement_diagnos(accompanement_data):
                         result_mkb_title = f"{row_data.get('title')}"
             except:
                 clinic_diag_text = value_raw
-            result = f"{result_mkb_title}; {clinic_diag_text}"
+            result = f"{clinic_diag_text}; {result_mkb_title}"
         accomponement_result.append([Paragraph(f"<u>{result}</u>", style), Paragraph(f"код по МКБ {space_symbol * 3}<u>{result_mkb_code}</u>", style)])
         accomponement_result.append([Paragraph("", style), Paragraph("", style)])
     opinion.extend(accomponement_result)
