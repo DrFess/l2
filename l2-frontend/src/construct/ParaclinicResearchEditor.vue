@@ -27,7 +27,15 @@
           <span
             v-else
             class="input-group-addon"
-          >Полное наименование</span>
+          >Полное наименование
+            <a
+              v-if="pk !== -1"
+              href="#"
+              class="a-under color-export-research"
+              style="padding-right: 10px"
+              @click.prevent="exportResearch(pk)"
+            >Экспорт</a>
+          </span>
           <input
             v-model="title"
             type="text"
@@ -1126,6 +1134,15 @@
             tag="div"
             @load-file="onLoadFileGroup"
           />
+          <LoadFile
+            v-if="pk === -1"
+            is-load-group-for-protocol
+            title-button="Копировать услугу"
+            file-filter="application/JSON"
+            :research-id="pk"
+            tag="div"
+            @load-file="onLoadFileResearch"
+          />
         </div>
       </template>
       <div v-if="ex_dep === 12 && pk > -1">
@@ -1476,7 +1493,6 @@ export default {
     onLoadFileGroup(importData) {
       try {
         const { groups: [group] } = JSON.parse(importData);
-
         if (!group.fields) {
           throw Error('В файле не найдены поля ввода');
         }
@@ -1489,8 +1505,30 @@ export default {
         this.$error('Некорректный файл');
       }
     },
+    onLoadFileResearch(importData) {
+      try {
+        const research = JSON.parse(importData);
+        console.log(research);
+        for (const group of research.groups) {
+          console.log(group);
+          if (!group.fields) {
+            throw Error('В файле не найдены поля ввода');
+          }
+
+          this.add_group(group);
+          this.$ok(`Группа "${group.title}" ОК`);
+        }
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error(e);
+        this.$error('Некорректный файл');
+      }
+    },
     exportGroup(groupId) {
       window.open(`/api/researches/group-as-json?groupId=${groupId}`, 'group-export');
+    },
+    exportResearch(researchId) {
+      window.open(`/api/researches/research-as-json?researchId=${researchId}`, 'research-export');
     },
     open_localization() {
       this.show_localization = true;
@@ -2078,5 +2116,9 @@ export default {
 };
 .change-field-group {
   margin: 6px 0;
+}
+
+.color-export-research {
+  color: #d7f1fa;
 }
 </style>

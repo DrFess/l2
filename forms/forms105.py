@@ -662,7 +662,7 @@ def form_03(request_data):
         Paragraph('7. Код территории проживания: ___ Житель: город - 1; село - 2.', style),
         Paragraph('8. Страховой полис (серия, номер):{}'.format(polis_data), style),
         Paragraph('Выдан: {}'.format(patient_data['oms']['polis_issued']), style),
-        Paragraph('9. Вид оплаты:______________', style),
+        Paragraph('9. Вид оплаты: ОМС', style),
         Paragraph('10. Социальный статус: {}'.format(primary_reception_data['social_status']), style),
         Paragraph('11. Категория льготности: {}'.format(primary_reception_data['category_privilege']), style),
         Paragraph('12. Кем направлен больной: {}'.format(primary_reception_data['who_directed']), style),

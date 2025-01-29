@@ -32,7 +32,7 @@ from directory.models import (
     ReleationsFT,
     ParaclinicTemplateNameDepartment,
     ParaclinicFieldTemplateDepartment,
-    ConstructorEditAccessResearch,
+    ConstructorEditAccessResearch, Researches,
 )
 from directory.sql_func import get_constructor_edit_access_by_research_id, get_constructor_edit_access_by_department_or_doctor
 from directory.utils import get_researches_details
@@ -1164,6 +1164,60 @@ def group_as_json(request):
     response = HttpResponse(json.dumps(result, ensure_ascii=False), content_type='application/json')
     response['Content-Disposition'] = f"attachment; filename*=utf-8''group-{quote(f'{group.title}')}.json"
 
+    return response
+
+
+def research_as_json(request):
+    research_id = request.GET.get("researchId")
+    groups_to_save = []
+    research_data = {}
+    groups = ParaclinicInputGroups.objects.filter(research_id=research_id)
+    r = Researches.objects.get(pk=research_id)
+    for group in groups:
+        fields_in_group = []
+        for f in ParaclinicInputField.objects.filter(group=group).order_by('order'):
+            field_data = {
+                'title': f.title,
+                'short_title': f.short_title,
+                'order': f.order,
+                'default_value': f.default_value,
+                'lines': f.lines,
+                'field_type': f.field_type,
+                'for_extract_card': f.for_extract_card,
+                'for_talon': f.for_talon,
+                'operator_enter_param': f.operator_enter_param,
+                'is_diag_table': f.is_diag_table,
+                'for_med_certificate': f.for_med_certificate,
+                'visibility': f.visibility,
+                'not_edit': f.not_edit,
+                'can_edit': f.can_edit_computed,
+                'controlParam': f.control_param,
+                'helper': f.helper,
+                'sign_organization': f.sign_organization,
+                'input_templates': f.input_templates,
+                'patientControlParam': f.patient_control_param_id,
+                'cdaOption': f.cda_option_id,
+                'attached': f.attached,
+                'required': f.required,
+                'hide': f.hide,
+            }
+            fields_in_group.append(field_data)
+        groups_to_save.append(
+            {
+                'title': group.title,
+                'show_title': group.show_title,
+                'order': group.order,
+                'hide': group.hide,
+                'fields': fields_in_group,
+                'fieldsInline': group.fields_inline,
+                'cdaOption': group.cda_option_id,
+                'visibility': group.visibility,
+                'display_hidden': False,
+            }
+        )
+    research_data['groups'] = groups_to_save
+    response = HttpResponse(json.dumps(research_data, ensure_ascii=False), content_type='application/json')
+    response['Content-Disposition'] = f"attachment; filename*=utf-8''group-{quote(f'{r.title}')}.json"
     return response
 
 

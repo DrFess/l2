@@ -29,8 +29,19 @@ class Command(BaseCommand):
                     'field_type': f.field_type,
                     'for_extract_card': f.for_extract_card,
                     'for_talon': f.for_talon,
+                    'operator_enter_param': f.operator_enter_param,
+                    'is_diag_table': f.is_diag_table,
+                    'for_med_certificate': f.for_med_certificate,
+                    'visibility': f.visibility,
+                    'not_edit': f.not_edit,
+                    'can_edit': f.can_edit_computed,
+                    'controlParam': f.control_param,
                     'helper': f.helper,
+                    'sign_organization': f.sign_organization,
                     'input_templates': f.input_templates,
+                    'patientControlParam': f.patient_control_param_id,
+                    'cdaOption': f.cda_option_id,
+                    'attached': f.attached,
                     'required': f.required,
                     'hide': f.hide,
                 }
@@ -41,8 +52,11 @@ class Command(BaseCommand):
                     'show_title': group.show_title,
                     'order': group.order,
                     'hide': group.hide,
-                    'paraclinic_input_field': fields_in_group,
+                    'fields': fields_in_group,
                     'fieldsInline': group.fields_inline,
+                    'cdaOption': group.cda_option_id,
+                    'visibility': group.visibility,
+                    'display_hidden': False,
                 }
             )
         research_data['paraclinic_input_groups'] = groups_to_save
