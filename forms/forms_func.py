@@ -517,7 +517,7 @@ def primary_reception_get_data(hosp_first_num, site_type=0):
             if i[3] == 'Диагноз направившего учреждения':
                 diagnos_who_directed = i[2]
                 continue
-            if i[3] == 'Диагноз при поступлении':
+            if i[3] == 'Диагноз при поступлении' or i[3] == 'Основное заболевание':
                 diagnos_entered = i[2]
                 continue
             if i[3] == 'Госпитализирован по поводу данного заболевания':

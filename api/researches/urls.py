@@ -32,6 +32,7 @@ urlpatterns = [
     path('help-link-field', views.help_link_field),
     path('research-groups-by-laboratory', views.research_groups_by_laboratory),
     path('group-as-json', views.group_as_json),
+    path('research-as-json', views.research_as_json),
     path('tube-related-data', views.tube_related_data),
     path('existing-tubes-relation', views.get_existing_tubes_relation),
     path('tube-related-data/update', views.tube_related_data_update),
