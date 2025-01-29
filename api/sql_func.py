@@ -137,7 +137,7 @@ def get_field_result(client_id, field_id, count=1, current_year='1900-01-01 00:0
     return row
 
 
-def get_field_result_by_cda(client_id, field_ids, count=1, parent_iss=-1,):
+def get_field_result_by_cda(client_id, field_ids, count=1, parent_iss=-1, use_parent_iss='-1'):
     """
     на входе: id-поля, id-карты,
     выход: последний результат поля
@@ -163,7 +163,12 @@ def get_field_result_by_cda(client_id, field_ids, count=1, parent_iss=-1,):
             WHERE directions_napravleniya.client_id = %(client_p)s
             and directions_paraclinicresult.field_id in %(field_ids)s
             and directions_issledovaniya.time_confirmation is not NULL
-            AND directions_napravleniya.parent_id in %(parent_iss)s
+            AND 
+            CASE WHEN %(use_parent_iss)s != '-1' THEN 
+                directions_napravleniya.parent_id in %(parent_iss)s
+                WHEN %(use_parent_iss)s = '-1' THEN 
+                     directions_issledovaniya.time_confirmation is not Null
+                END
             ORDER BY directions_issledovaniya.time_confirmation DESC LIMIT %(count_p)s
             """,
             params={
@@ -172,6 +177,7 @@ def get_field_result_by_cda(client_id, field_ids, count=1, parent_iss=-1,):
                 'count_p': count,
                 'tz': TIME_ZONE,
                 'parent_iss': parent_iss,
+                'use_parent_iss': use_parent_iss,
             },
         )
 
