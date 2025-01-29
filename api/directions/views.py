@@ -3127,7 +3127,7 @@ def last_field_result(request):
                 if len(data) == 4 and data[3] == "diagTable":
                     is_diag_table = True
                 if not is_diag_table and not result:
-                    result = field_get_link_data_by_cda(tuple(field_pks), client_pk, parent_iss=tuple(parent_iss))
+                    result = field_get_link_data_by_cda(tuple(field_pks), client_pk, parent_iss=tuple(parent_iss), use_parent_iss='1')
             else:
                 field_pks = [data[1]]
 
@@ -3136,6 +3136,25 @@ def last_field_result(request):
                 result = field_get_link_diag_table(field_pks, client_pk, parent_iss=tuple(parent_iss))
             if not result and not search_by_cda:
                 result = field_get_link_data(field_pks, client_pk, logical_or, logical_and, logical_group_or, use_root_hosp=True, parent_iss=tuple(parent_iss), search_by_cda=search_by_cda)
+    elif request_data["fieldPk"].find('%cda') != -1:
+        data = request_data["fieldPk"].split('#')
+        logical_or = True
+        days_ago = -1
+        if len(data) < 2:
+            result = {"value": ""}
+        else:
+            # cda#code#days_ago#3
+            search_by_cda = True
+            cda_code = data[1]
+            if len(data) > 2 and data[2].lower() == "days_ago":
+                days_ago = data[3]
+
+            cda_id = list(CdaFields.get_cda_id_by_codes([int(cda_code)]))
+            paraclinic_field = ParaclinicInputField.objects.filter(cda_option_id__in=cda_id).values_list("pk", flat=True)
+            field_pks = list(paraclinic_field)
+            field_pks = [i for i in field_pks]
+            result = field_get_link_data_by_cda(tuple(field_pks), client_pk, use_parent_iss='1', days_ago=days_ago)
+
     elif request_data["fieldPk"].find('%control_param#') != -1:
         # %control_param#code#period#find_val
         data = request_data["fieldPk"].split('#')
@@ -3262,16 +3281,25 @@ def field_get_link_data_by_cda(
     field_pks,
     client_pk,
     parent_iss=(-1,),
+    use_parent_iss='-1',
+    days_ago=-1
 ):
     result, value, temp_value = None, None, None
-    rows = get_field_result_by_cda(client_pk, field_pks, count=1, parent_iss=parent_iss)
+    rows = get_field_result_by_cda(client_pk, field_pks, count=1, parent_iss=parent_iss, use_parent_iss=use_parent_iss)
+    date_confirm = None
     if rows:
         for i in rows:
             value = i.value
+            date_confirm = i.time_confirmation
             match = re.fullmatch(r'\d{4}-\d\d-\d\d', value)
             if match:
                 value = normalize_date(value)
+    if days_ago > -1:
+        date_target_confirm = datetime.now() - timedelta(days=days_ago)
+        if date_confirm < date_target_confirm:
+            value = ""
     return {"value": value}
+
 
 def field_get_link_diag_table(field_pks, client_pk, parent_iss=(-1,), use_current_year=False, months_ago='-1', use_root_hosp=False, use_current_hosp=True):
     result = None
