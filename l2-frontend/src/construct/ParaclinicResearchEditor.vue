@@ -1508,9 +1508,7 @@ export default {
     onLoadFileResearch(importData) {
       try {
         const research = JSON.parse(importData);
-        console.log(research);
         for (const group of research.groups) {
-          console.log(group);
           if (!group.fields) {
             throw Error('В файле не найдены поля ввода');
           }
