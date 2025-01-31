@@ -2887,7 +2887,6 @@ def last_field_result(request):
     elif request_data["fieldPk"].find('%agent') != -1:
         agent_status = False
         p_agent = None
-        agent_person_data = {}
         result_val = ''
         if c.who_is_agent:
             p_agent = getattr(c, c.who_is_agent)
