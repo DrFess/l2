@@ -84,7 +84,19 @@
           v-if="ex_dep !== 12 && ex_dep !== 13 && ex_dep !== 14 && ex_dep !== 15"
           class="input-group"
         >
-          <span class="input-group-addon">Краткое <small>(для создания направлений)</small></span>
+          <label
+            class="input-group-addon"
+            for="rollup"
+          >
+            <input
+              id="rollup"
+              v-model="groupRollUp"
+              type="checkbox"
+            >
+            Свернуть</label>
+          <span class="input-group-addon">
+            Краткое <small>(для направлений)</small>
+          </span>
           <input
             v-model="short_title"
             type="text"
@@ -1363,6 +1375,7 @@ export default {
       timeoutOne: null,
       timeoutTwo: null,
       timeoutThree: null,
+      groupRollUp: false,
     };
   },
   computed: {
