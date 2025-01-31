@@ -686,18 +686,24 @@
                         v-model="row.title"
                         type="text"
                         class="form-control"
+                        :disabled="row.hide"
+                        :class="row.hide ? 'hide-background' : ''"
                       >
                       <span class="input-group-addon">Синоним</span>
                       <input
                         v-model="row.short_title"
                         type="text"
                         class="form-control"
+                        :disabled="row.hide"
+                        :class="row.hide ? 'hide-background' : ''"
                       >
                       <span class="input-group-addon">ID-скрепки</span>
                       <input
                         v-model="row.attached"
                         type="text"
                         class="form-control"
+                        :disabled="row.hide"
+                        :class="row.hide ? 'hide-background' : ''"
                       >
                     </div>
                   </div>
