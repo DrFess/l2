@@ -2893,18 +2893,7 @@ def last_field_result(request):
             agent_status = bool(p_agent)
         if agent_status:
             agent_person_data = p_agent.get_data_individual()
-            result_val = f"{agent_person_data.get('fio')}, {agent_person_data.get('phone')}"
-        result = {"value": result_val}
-    elif request_data["fieldPk"].find('%agent_born') != -1:
-        agent_status = False
-        p_agent = None
-        result_val = ''
-        if c.who_is_agent:
-            p_agent = getattr(c, c.who_is_agent)
-            agent_status = bool(p_agent)
-        if agent_status:
-            agent_person_data = p_agent.get_data_individual()
-            result_val = f"{agent_person_data.get('fio')}, д/р{agent_person_data.get('born')}, {agent_person_data.get('phone')}"
+            result_val = f"{agent_person_data.get('fio')}, д/р{agent_person_data.get('born')} {agent_person_data.get('phone')}"
         result = {"value": result_val}
     elif request_data["fieldPk"].find('%mother_born') != -1:
         result = {"value": mother_data['born']}
