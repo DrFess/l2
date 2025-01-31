@@ -672,7 +672,7 @@
                     <i class="glyphicon glyphicon-arrow-down" />
                   </button>
                 </div>
-                <div :class="group.fieldsRollUp ? 'fields-roll-up-title' : ''">
+                <div :class="(group.fieldsRollUp || row.hide) ? 'fields-roll-up-title' : ''">
                   <div>
                     <div class="input-group">
                       <span class="input-group-addon">Название поля ({{ row.pk === -1 ? 'новое' : row.pk }})</span>
@@ -695,7 +695,7 @@
                       >
                     </div>
                   </div>
-                  <div v-if="!group.fieldsRollUp">
+                  <div v-if="!group.fieldsRollUp && !row.hide">
                     <div class="row">
                       <div class="col-xs-4">
                         <strong>Контролируемый параметр:</strong>
@@ -999,7 +999,7 @@
                     />
                   </div>
                 </div>
-                <div v-if="!group.fieldsRollUp">
+                <div v-if="!group.fieldsRollUp && !row.hide">
                   <div>
                     <strong>Подсказка:</strong>
                     <textarea
@@ -1016,28 +1016,28 @@
                     />
                   </div>
                 </div>
-                <div v-if="!group.fieldsRollUp">
+                <div v-if="!group.fieldsRollUp && !row.hide">
                   <strong>Видимость:</strong>
                   <textarea
                     v-model="row.visibility"
                     class="form-control"
                   />
                 </div>
-                <div v-if="!group.fieldsRollUp">
+                <div v-if="!group.fieldsRollUp && !row.hide">
                   <strong>Контроль:</strong>
                   <textarea
                     v-model="row.controlParam"
                     class="form-control"
                   />
                 </div>
-                <div :class="group.fieldsRollUp ? 'fields-roll-up-checkbox' : ''">
+                <div :class="(group.fieldsRollUp || row.hide)? 'fields-roll-up-checkbox' : ''">
                   <div>
                     <label> <input
                       v-model="row.hide"
                       type="checkbox"
                     > скрыть поле </label>
                   </div>
-                  <div v-if="!group.fieldsRollUp">
+                  <div v-if="!group.fieldsRollUp && !row.hide">
                     <label> <input
                       v-model="row.required"
                       type="checkbox"
