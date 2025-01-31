@@ -672,330 +672,334 @@
                     <i class="glyphicon glyphicon-arrow-down" />
                   </button>
                 </div>
-                <div>
-                  <div class="input-group">
-                    <span class="input-group-addon">Название поля ({{ row.pk === -1 ? 'новое' : row.pk }})</span>
-                    <input
-                      v-model="row.title"
-                      type="text"
-                      class="form-control"
-                    >
-                    <span class="input-group-addon">Синоним</span>
-                    <input
-                      v-model="row.short_title"
-                      type="text"
-                      class="form-control"
-                    >
-                    <span class="input-group-addon">ID-скрепки</span>
-                    <input
-                      v-model="row.attached"
-                      type="text"
-                      class="form-control"
-                    >
-                  </div>
-                  <div class="row">
-                    <div class="col-xs-4">
-                      <strong>Контролируемый параметр:</strong>
-                      <Treeselect
-                        v-model="row.patientControlParam"
-                        class="treeselect treeselect-26px"
-                        :multiple="false"
-                        :disable-branch-nodes="true"
-                        :options="patient_control_param_all"
-                        placeholder="Контролируемый параметр"
-                        :append-to-body="true"
-                        :clearable="false"
-                      />
-                    </div>
-                    <div class="col-xs-4">
-                      <strong>CDA-отношение:</strong>
-                      <Treeselect
-                        v-model="row.cdaOption"
-                        class="treeselect treeselect-26px"
-                        :multiple="false"
-                        :disable-branch-nodes="true"
-                        :options="cda_options"
-                        placeholder="CDA-отношение"
-                        :append-to-body="true"
-                        :clearable="false"
-                      />
-                    </div>
-                    <div class="col-xs-4">
-                      <strong>Параметр статистики:</strong>
-                      <Treeselect
-                        v-model="row.patternParam"
-                        class="treeselect treeselect-26px"
-                        :multiple="false"
-                        :disable-branch-nodes="true"
-                        :options="patternParams"
-                        placeholder="CDA-отношение"
-                        :append-to-body="true"
-                        :clearable="false"
-                      />
-                    </div>
-                  </div>
-                  <div v-if="row.field_type === 0 || row.field_type === 29">
-                    <strong>Значение по умолчанию:</strong>
-                    <textarea
-                      v-if="row.lines > 1"
-                      v-model="row.default"
-                      :rows="row.lines"
-                      class="form-control"
-                    />
-                    <input
-                      v-else
-                      v-model="row.default"
-                      class="form-control"
-                    >
-                  </div>
-                  <div v-if="[1, 20].includes(row.field_type)">
-                    <strong>Значение по умолчанию:</strong>
-                    <input
-                      v-model="row.default"
-                      class="form-control"
-                    >
-                  </div>
-                  <div v-else-if="row.field_type === 3">
-                    <strong>Формула:</strong>
-                    <input
-                      v-model="row.default"
-                      class="form-control"
-                    >
-                    <label>
+                <div :class="group.fieldsRollUp ? 'fields-roll-up-title' : ''">
+                  <div>
+                    <div class="input-group">
+                      <span class="input-group-addon">Название поля ({{ row.pk === -1 ? 'новое' : row.pk }})</span>
                       <input
-                        v-model="row.can_edit"
-                        type="checkbox"
-                      > можно редактировать
-                    </label>
-                  </div>
-                  <div v-else-if="[2, 28, 32, 33, 34, 36].includes(row.field_type)">
-                    <strong>Ссылка на поле (%):</strong>
-                    <input
-                      v-model="row.default"
-                      class="form-control"
-                    >
-                  </div>
-                  <div v-else-if="row.field_type === 30">
-                    <strong>Тип номера:</strong>
-                    <select
-                      v-model="row.default"
-                      class="form-control"
-                    >
-                      <option value="">
-                        не выбрано
-                      </option>
-                      <option value="deathFormNumber">
-                        Номер свидетельства о смерти
-                      </option>
-                    </select>
-                  </div>
-                  <div v-else-if="row.field_type === 37">
-                    <strong>Тип номера:</strong>
-                    <select
-                      v-model="row.default"
-                      class="form-control"
-                    >
-                      <option value="">
-                        не выбрано
-                      </option>
-                      <option value="deathPerinatalNumber">
-                        Номер перинатольного МСС
-                      </option>
-                    </select>
-                  </div>
-                  <div v-else-if="row.field_type === 11">
-                    <strong>ID фракции:</strong>
-                    <input
-                      v-model="row.default"
-                      class="form-control"
-                    >
-                  </div>
-                  <div v-else-if="row.field_type === 13 || row.field_type === 14 || row.field_type === 23">
-                    <strong>ID поля:</strong>
-                    <input
-                      v-model="row.default"
-                      class="form-control"
-                    >
-                  </div>
-                  <div v-else-if="row.field_type === 15">
-                    <strong>Значение по умолчанию:</strong>
-                    <RichTextEditor v-model="row.default" />
-                  </div>
-                  <div v-else-if="row.field_type === 18">
-                    <strong>Значение по умолчанию:</strong>
-                    <NumberField v-model="row.default" />
-                  </div>
-                  <div v-else-if="row.field_type === 19">
-                    <strong>Значение по умолчанию:</strong>
-                    <NumberRangeField
-                      v-model="row.default"
-                      :variants="row.values_to_input"
-                    />
-                  </div>
-                  <div v-else-if="row.field_type === 21">
-                    <ConfigureAnesthesiaField v-model="row.values_to_input" />
-                  </div>
-                  <div v-else-if="row.field_type === 24">
-                    <strong>Результаты лабораторные:</strong>
-                  </div>
-                  <div v-else-if="row.field_type === 25">
-                    <strong>Результаты диагностические:</strong>
-                  </div>
-                  <div v-else-if="row.field_type === 26">
-                    <strong>Результаты консультационные:</strong>
-                  </div>
-                  <div v-else-if="row.field_type === 38">
-                    <strong>Результаты процедурного листа:</strong>
-                  </div>
-                  <div v-else-if="row.field_type === 27 && row.is_diag_table">
-                    <strong>Ссылка на поле (%):</strong>
-                    <input
-                      v-model="row.default"
-                      class="form-control"
-                    >
-                    <strong>Таблица:</strong>
-                  </div>
-                  <div v-else-if="row.field_type === 27 && !row.is_diag_table">
-                    <strong>Таблица:</strong>
-                  </div>
-                  <div v-else-if="row.field_type === 39">
-                    <strong>Справочник:</strong>
-                    <br>
-                    <Treeselect
-                      :value="row.values_to_input[0] || null"
-                      class="treeselect-wide"
-                      :multiple="false"
-                      :disable-branch-nodes="true"
-                      :options="dynamicDirectories"
-                      placeholder="Справочник не выбран"
-                      :append-to-body="true"
-                      :clearable="true"
-                      @input="e => e ? row.values_to_input = [e] : row.values_to_input = []"
-                    />
-                  </div>
-                  <PermanentDirectories
-                    v-if="row.field_type === 28"
-                    :row="row"
-                    :permanent_directories_keys="permanent_directories_keys"
-                    :permanent_directories="permanent_directories"
-                  />
-                  <v-collapse-wrapper v-show="[0, 10, 12, 13, 14, 19, 22, 23, 27].includes(row.field_type)">
-                    <div
-                      v-collapse-toggle
-                      class="header"
-                    >
-                      <a
-                        v-if="row.field_type === 0"
-                        href="#"
-                        class="a-under"
-                        @click.prevent
+                        v-model="row.title"
+                        type="text"
+                        class="form-control"
                       >
-                        Шаблоны быстрого ввода (кол-во: {{ row.values_to_input.length }})
-                      </a>
-                      <a
-                        v-else-if="row.field_type === 19"
-                        href="#"
-                        class="a-under"
-                        @click.prevent
+                      <span class="input-group-addon">Синоним</span>
+                      <input
+                        v-model="row.short_title"
+                        type="text"
+                        class="form-control"
                       >
-                        Мин, Макс, Шаг, Единицы измерения
-                      </a>
-                      <a
-                        v-else-if="row.field_type === 27"
-                        href="#"
-                        class="a-under"
-                        @click.prevent
+                      <span class="input-group-addon">ID-скрепки</span>
+                      <input
+                        v-model="row.attached"
+                        type="text"
+                        class="form-control"
                       >
-                        Настройка таблицы
-                      </a>
-                      <a
-                        v-else
-                        href="#"
-                        class="a-under"
-                        @click.prevent
-                      > Варианты (кол-во: {{ row.values_to_input.length }}) </a>
                     </div>
-                    <div
-                      v-collapse-content
-                      class="my-content"
-                    >
-                      <TableConstructor
-                        v-if="row.field_type === 27"
-                        :row="row"
+                  </div>
+                  <div v-if="!group.fieldsRollUp">
+                    <div class="row">
+                      <div class="col-xs-4">
+                        <strong>Контролируемый параметр:</strong>
+                        <Treeselect
+                          v-model="row.patientControlParam"
+                          class="treeselect treeselect-26px"
+                          :multiple="false"
+                          :disable-branch-nodes="true"
+                          :options="patient_control_param_all"
+                          placeholder="Контролируемый параметр"
+                          :append-to-body="true"
+                          :clearable="false"
+                        />
+                      </div>
+                      <div class="col-xs-4">
+                        <strong>CDA-отношение:</strong>
+                        <Treeselect
+                          v-model="row.cdaOption"
+                          class="treeselect treeselect-26px"
+                          :multiple="false"
+                          :disable-branch-nodes="true"
+                          :options="cda_options"
+                          placeholder="CDA-отношение"
+                          :append-to-body="true"
+                          :clearable="false"
+                        />
+                      </div>
+                      <div class="col-xs-4">
+                        <strong>Параметр статистики:</strong>
+                        <Treeselect
+                          v-model="row.patternParam"
+                          class="treeselect treeselect-26px"
+                          :multiple="false"
+                          :disable-branch-nodes="true"
+                          :options="patternParams"
+                          placeholder="CDA-отношение"
+                          :append-to-body="true"
+                          :clearable="false"
+                        />
+                      </div>
+                    </div>
+                    <div v-if="row.field_type === 0 || row.field_type === 29">
+                      <strong>Значение по умолчанию:</strong>
+                      <textarea
+                        v-if="row.lines > 1"
+                        v-model="row.default"
+                        :rows="row.lines"
+                        class="form-control"
                       />
-                      <template v-else>
-                        <div
-                          class="input-group"
-                          style="margin-bottom: 5px"
+                      <input
+                        v-else
+                        v-model="row.default"
+                        class="form-control"
+                      >
+                    </div>
+                    <div v-if="[1, 20].includes(row.field_type)">
+                      <strong>Значение по умолчанию:</strong>
+                      <input
+                        v-model="row.default"
+                        class="form-control"
+                      >
+                    </div>
+                    <div v-else-if="row.field_type === 3">
+                      <strong>Формула:</strong>
+                      <input
+                        v-model="row.default"
+                        class="form-control"
+                      >
+                      <label>
+                        <input
+                          v-model="row.can_edit"
+                          type="checkbox"
+                        > можно редактировать
+                      </label>
+                    </div>
+                    <div v-else-if="[2, 28, 32, 33, 34, 36].includes(row.field_type)">
+                      <strong>Ссылка на поле (%):</strong>
+                      <input
+                        v-model="row.default"
+                        class="form-control"
+                      >
+                    </div>
+                    <div v-else-if="row.field_type === 30">
+                      <strong>Тип номера:</strong>
+                      <select
+                        v-model="row.default"
+                        class="form-control"
+                      >
+                        <option value="">
+                          не выбрано
+                        </option>
+                        <option value="deathFormNumber">
+                          Номер свидетельства о смерти
+                        </option>
+                      </select>
+                    </div>
+                    <div v-else-if="row.field_type === 37">
+                      <strong>Тип номера:</strong>
+                      <select
+                        v-model="row.default"
+                        class="form-control"
+                      >
+                        <option value="">
+                          не выбрано
+                        </option>
+                        <option value="deathPerinatalNumber">
+                          Номер перинатольного МСС
+                        </option>
+                      </select>
+                    </div>
+                    <div v-else-if="row.field_type === 11">
+                      <strong>ID фракции:</strong>
+                      <input
+                        v-model="row.default"
+                        class="form-control"
+                      >
+                    </div>
+                    <div v-else-if="row.field_type === 13 || row.field_type === 14 || row.field_type === 23">
+                      <strong>ID поля:</strong>
+                      <input
+                        v-model="row.default"
+                        class="form-control"
+                      >
+                    </div>
+                    <div v-else-if="row.field_type === 15">
+                      <strong>Значение по умолчанию:</strong>
+                      <RichTextEditor v-model="row.default" />
+                    </div>
+                    <div v-else-if="row.field_type === 18">
+                      <strong>Значение по умолчанию:</strong>
+                      <NumberField v-model="row.default" />
+                    </div>
+                    <div v-else-if="row.field_type === 19">
+                      <strong>Значение по умолчанию:</strong>
+                      <NumberRangeField
+                        v-model="row.default"
+                        :variants="row.values_to_input"
+                      />
+                    </div>
+                    <div v-else-if="row.field_type === 21">
+                      <ConfigureAnesthesiaField v-model="row.values_to_input" />
+                    </div>
+                    <div v-else-if="row.field_type === 24">
+                      <strong>Результаты лабораторные:</strong>
+                    </div>
+                    <div v-else-if="row.field_type === 25">
+                      <strong>Результаты диагностические:</strong>
+                    </div>
+                    <div v-else-if="row.field_type === 26">
+                      <strong>Результаты консультационные:</strong>
+                    </div>
+                    <div v-else-if="row.field_type === 38">
+                      <strong>Результаты процедурного листа:</strong>
+                    </div>
+                    <div v-else-if="row.field_type === 27 && row.is_diag_table">
+                      <strong>Ссылка на поле (%):</strong>
+                      <input
+                        v-model="row.default"
+                        class="form-control"
+                      >
+                      <strong>Таблица:</strong>
+                    </div>
+                    <div v-else-if="row.field_type === 27 && !row.is_diag_table">
+                      <strong>Таблица:</strong>
+                    </div>
+                    <div v-else-if="row.field_type === 39">
+                      <strong>Справочник:</strong>
+                      <br>
+                      <Treeselect
+                        :value="row.values_to_input[0] || null"
+                        class="treeselect-wide"
+                        :multiple="false"
+                        :disable-branch-nodes="true"
+                        :options="dynamicDirectories"
+                        placeholder="Справочник не выбран"
+                        :append-to-body="true"
+                        :clearable="true"
+                        @input="e => e ? row.values_to_input = [e] : row.values_to_input = []"
+                      />
+                    </div>
+                    <PermanentDirectories
+                      v-if="row.field_type === 28"
+                      :row="row"
+                      :permanent_directories_keys="permanent_directories_keys"
+                      :permanent_directories="permanent_directories"
+                    />
+                    <v-collapse-wrapper v-show="[0, 10, 12, 13, 14, 19, 22, 23, 27].includes(row.field_type)">
+                      <div
+                        v-collapse-toggle
+                        class="header"
+                      >
+                        <a
+                          v-if="row.field_type === 0"
+                          href="#"
+                          class="a-under"
+                          @click.prevent
                         >
-                          <input
-                            v-model="row.new_value"
-                            type="text"
-                            class="form-control"
-                            placeholder="Новый шаблон быстрого ввода"
-                            @keyup.enter="add_template_value(row)"
-                          >
-                          <span class="input-group-btn">
-                            <button
-                              class="btn last btn-blue-nb"
-                              type="button"
-                              :disabled="row.new_value === ''"
-                              @click="add_template_value(row)"
-                            >
-                              Добавить
-                            </button>
-                          </span>
-                        </div>
-                        <div>
+                          Шаблоны быстрого ввода (кол-во: {{ row.values_to_input.length }})
+                        </a>
+                        <a
+                          v-else-if="row.field_type === 19"
+                          href="#"
+                          class="a-under"
+                          @click.prevent
+                        >
+                          Мин, Макс, Шаг, Единицы измерения
+                        </a>
+                        <a
+                          v-else-if="row.field_type === 27"
+                          href="#"
+                          class="a-under"
+                          @click.prevent
+                        >
+                          Настройка таблицы
+                        </a>
+                        <a
+                          v-else
+                          href="#"
+                          class="a-under"
+                          @click.prevent
+                        > Варианты (кол-во: {{ row.values_to_input.length }}) </a>
+                      </div>
+                      <div
+                        v-collapse-content
+                        class="my-content"
+                      >
+                        <TableConstructor
+                          v-if="row.field_type === 27"
+                          :row="row"
+                        />
+                        <template v-else>
                           <div
-                            v-for="(v, i) in row.values_to_input"
-                            :key="i"
                             class="input-group"
-                            style="margin-bottom: 1px"
+                            style="margin-bottom: 5px"
                           >
-                            <span class="input-group-btn">
-                              <button
-                                class="btn btn-blue-nb lob"
-                                :disabled="is_first_in_template(i)"
-                                @click="up_template(row, i)"
-                              >
-                                <i class="glyphicon glyphicon-arrow-up" />
-                              </button>
-                            </span>
-                            <span class="input-group-btn">
-                              <button
-                                class="btn btn-blue-nb nob"
-                                :disabled="is_last_in_template(row, i)"
-                                @click="down_template(row, i)"
-                              >
-                                <i class="glyphicon glyphicon-arrow-down" />
-                              </button>
-                            </span>
                             <input
-                              v-model="row.values_to_input[i]"
-                              class="form-control"
+                              v-model="row.new_value"
                               type="text"
+                              class="form-control"
+                              placeholder="Новый шаблон быстрого ввода"
+                              @keyup.enter="add_template_value(row)"
                             >
                             <span class="input-group-btn">
                               <button
-                                class="btn btn-blue-nb"
-                                @click="remove_template(row, i)"
+                                class="btn last btn-blue-nb"
+                                type="button"
+                                :disabled="row.new_value === ''"
+                                @click="add_template_value(row)"
                               >
-                                <i class="glyphicon glyphicon-remove" />
+                                Добавить
                               </button>
                             </span>
                           </div>
-                        </div>
-                      </template>
-                    </div>
-                  </v-collapse-wrapper>
-                  <FieldHelper
-                    :field-type="row.field_type"
-                    :value="row.default"
-                    :groups="groups"
-                  />
+                          <div>
+                            <div
+                              v-for="(v, i) in row.values_to_input"
+                              :key="i"
+                              class="input-group"
+                              style="margin-bottom: 1px"
+                            >
+                              <span class="input-group-btn">
+                                <button
+                                  class="btn btn-blue-nb lob"
+                                  :disabled="is_first_in_template(i)"
+                                  @click="up_template(row, i)"
+                                >
+                                  <i class="glyphicon glyphicon-arrow-up" />
+                                </button>
+                              </span>
+                              <span class="input-group-btn">
+                                <button
+                                  class="btn btn-blue-nb nob"
+                                  :disabled="is_last_in_template(row, i)"
+                                  @click="down_template(row, i)"
+                                >
+                                  <i class="glyphicon glyphicon-arrow-down" />
+                                </button>
+                              </span>
+                              <input
+                                v-model="row.values_to_input[i]"
+                                class="form-control"
+                                type="text"
+                              >
+                              <span class="input-group-btn">
+                                <button
+                                  class="btn btn-blue-nb"
+                                  @click="remove_template(row, i)"
+                                >
+                                  <i class="glyphicon glyphicon-remove" />
+                                </button>
+                              </span>
+                            </div>
+                          </div>
+                        </template>
+                      </div>
+                    </v-collapse-wrapper>
+                    <FieldHelper
+                      :field-type="row.field_type"
+                      :value="row.default"
+                      :groups="groups"
+                    />
+                  </div>
                 </div>
-                <div>
+                <div v-if="!group.fieldsRollUp">
                   <div>
                     <strong>Подсказка:</strong>
                     <textarea
@@ -1012,124 +1016,128 @@
                     />
                   </div>
                 </div>
-                <div>
+                <div v-if="!group.fieldsRollUp">
                   <strong>Видимость:</strong>
                   <textarea
                     v-model="row.visibility"
                     class="form-control"
                   />
                 </div>
-                <div>
+                <div v-if="!group.fieldsRollUp">
                   <strong>Контроль:</strong>
                   <textarea
                     v-model="row.controlParam"
                     class="form-control"
                   />
                 </div>
-                <div>
-                  <label> <input
-                    v-model="row.hide"
-                    type="checkbox"
-                  > скрыть поле </label>
-                  <label> <input
-                    v-model="row.required"
-                    type="checkbox"
-                  > запрет пустого </label>
-                  <label> <input
-                    v-model="row.for_talon"
-                    type="checkbox"
-                  > в талон </label>
-                  <label> <input
-                    v-model="row.is_diag_table"
-                    type="checkbox"
-                  > Табл.диагнозы </label>
-                  <label> <input
-                    v-model="row.for_med_certificate"
-                    type="checkbox"
-                  > в справку </label>
-                  <label> <input
-                    v-model="row.operator_enter_param"
-                    type="checkbox"
-                  > оператор </label>
-                  <label> <input
-                    v-model="row.not_edit"
-                    type="checkbox"
-                  > только чтение </label>
-                  <label v-show="row.field_type === 35">
-                    <input
-                      v-model="row.sign_organization"
+                <div :class="group.fieldsRollUp ? 'fields-roll-up-checkbox' : ''">
+                  <div>
+                    <label> <input
+                      v-model="row.hide"
                       type="checkbox"
-                    > ЭЦП-МО
-                  </label>
-                  <label
-                    v-show="row.field_type === 0 || row.field_type === 13 || row.field_type === 14 || row.field_type === 23"
-                    style="line-height: 1"
-                  >
-                    Число строк:<br>
-                    <input
-                      v-model.number="row.lines"
-                      class="form-control"
-                      type="number"
-                      min="1"
+                    > скрыть поле </label>
+                  </div>
+                  <div v-if="!group.fieldsRollUp">
+                    <label> <input
+                      v-model="row.required"
+                      type="checkbox"
+                    > запрет пустого </label>
+                    <label> <input
+                      v-model="row.for_talon"
+                      type="checkbox"
+                    > в талон </label>
+                    <label> <input
+                      v-model="row.is_diag_table"
+                      type="checkbox"
+                    > Табл.диагнозы </label>
+                    <label> <input
+                      v-model="row.for_med_certificate"
+                      type="checkbox"
+                    > в справку </label>
+                    <label> <input
+                      v-model="row.operator_enter_param"
+                      type="checkbox"
+                    > оператор </label>
+                    <label> <input
+                      v-model="row.not_edit"
+                      type="checkbox"
+                    > только чтение </label>
+                    <label v-show="row.field_type === 35">
+                      <input
+                        v-model="row.sign_organization"
+                        type="checkbox"
+                      > ЭЦП-МО
+                    </label>
+                    <label
+                      v-show="row.field_type === 0 || row.field_type === 13 || row.field_type === 14 || row.field_type === 23"
+                      style="line-height: 1"
                     >
-                  </label>
-                  <label>
-                    Тип поля:<br>
-                    <select
-                      v-model.number="row.field_type"
-                      class="form-control"
-                    >
-                      <option value="0">Строка</option>
-                      <option value="1">Дата</option>
-                      <option value="2">Диагноз по МКБ (1.2.643.5.1.13.13.11.1005)</option>
-                      <option value="32">МКБ-внешние причины заболеваемости и смертности(1.2.643.5.1.13.13.99.2.692)</option>
-                      <option value="33">МКБ-Алфавитный (1.2.643.5.1.13.13.11.1489)</option>
-                      <option value="34">МКБ-обычный (1.2.643.5.1.13.13.11.1005)</option>
-                      <option value="36">МКБ-Комбинация (1489, 692)</option>
-                      <option value="3">Расчётное</option>
-                      <option value="10">Справочник</option>
-                      <option value="11">Фракция</option>
-                      <option value="12">Радио</option>
-                      <option value="13">Поле описательного результата</option>
-                      <option value="14">Поле описательного результата без заголовка</option>
-                      <option
-                        v-if="rich_text_enabled || row.field_type === 15"
-                        value="15"
-                      >Текст с форматированием</option>
-                      <option value="16">(Стационар) агрегация по лаборатории</option>
-                      <option value="17">(Стационар) агрегация по описательным</option>
-                      <option value="18">Число</option>
-                      <option value="19">Число через range</option>
-                      <option value="20">Время ЧЧ:ММ</option>
-                      <option value="21">Течение анестезии (таблица)</option>
-                      <option value="22">Текст с автозаполнением</option>
-                      <option value="23">Ссылка без автозагрузки</option>
-                      <option value="24">Результаты лабораторные</option>
-                      <option value="25">Результаты диагностические</option>
-                      <option value="26">Результаты консультаций</option>
-                      <option value="38">Результаты процедурного листа</option>
-                      <option value="27">Таблица</option>
-                      <option value="40">Реляционная таблица</option>
-                      <option value="28">НСИ-справочник</option>
-                      <option value="29">Адрес по ФИАС</option>
-                      <option
-                        v-if="number_generator_field_enabled"
-                        value="30"
-                      >Генератор номера документа</option>
-                      <option
-                        v-if="number_generator_field_enabled"
-                        value="37"
-                      >Генератор номера перинатального МСС св-ва</option>
-                      <option
-                        v-if="tfoms_attachment_field_enabled"
-                        value="31"
+                      Число строк:<br>
+                      <input
+                        v-model.number="row.lines"
+                        class="form-control"
+                        type="number"
+                        min="1"
                       >
-                        Сведения о прикреплении застрахованного лица (ТФОМС)
-                      </option>
-                      <option value="35">Врач</option>
-                      <option value="39">Динамический справочник</option>
-                    </select>
-                  </label>
+                    </label>
+                    <label>
+                      Тип поля:<br>
+                      <select
+                        v-model.number="row.field_type"
+                        class="form-control"
+                      >
+                        <option value="0">Строка</option>
+                        <option value="1">Дата</option>
+                        <option value="2">Диагноз по МКБ (1.2.643.5.1.13.13.11.1005)</option>
+                        <option value="32">МКБ-внешние причины заболеваемости и смертности(1.2.643.5.1.13.13.99.2.692)</option>
+                        <option value="33">МКБ-Алфавитный (1.2.643.5.1.13.13.11.1489)</option>
+                        <option value="34">МКБ-обычный (1.2.643.5.1.13.13.11.1005)</option>
+                        <option value="36">МКБ-Комбинация (1489, 692)</option>
+                        <option value="3">Расчётное</option>
+                        <option value="10">Справочник</option>
+                        <option value="11">Фракция</option>
+                        <option value="12">Радио</option>
+                        <option value="13">Поле описательного результата</option>
+                        <option value="14">Поле описательного результата без заголовка</option>
+                        <option
+                          v-if="rich_text_enabled || row.field_type === 15"
+                          value="15"
+                        >Текст с форматированием</option>
+                        <option value="16">(Стационар) агрегация по лаборатории</option>
+                        <option value="17">(Стационар) агрегация по описательным</option>
+                        <option value="18">Число</option>
+                        <option value="19">Число через range</option>
+                        <option value="20">Время ЧЧ:ММ</option>
+                        <option value="21">Течение анестезии (таблица)</option>
+                        <option value="22">Текст с автозаполнением</option>
+                        <option value="23">Ссылка без автозагрузки</option>
+                        <option value="24">Результаты лабораторные</option>
+                        <option value="25">Результаты диагностические</option>
+                        <option value="26">Результаты консультаций</option>
+                        <option value="38">Результаты процедурного листа</option>
+                        <option value="27">Таблица</option>
+                        <option value="40">Реляционная таблица</option>
+                        <option value="28">НСИ-справочник</option>
+                        <option value="29">Адрес по ФИАС</option>
+                        <option
+                          v-if="number_generator_field_enabled"
+                          value="30"
+                        >Генератор номера документа</option>
+                        <option
+                          v-if="number_generator_field_enabled"
+                          value="37"
+                        >Генератор номера перинатального МСС св-ва</option>
+                        <option
+                          v-if="tfoms_attachment_field_enabled"
+                          value="31"
+                        >
+                          Сведения о прикреплении застрахованного лица (ТФОМС)
+                        </option>
+                        <option value="35">Врач</option>
+                        <option value="39">Динамический справочник</option>
+                      </select>
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2146,5 +2154,14 @@ export default {
 
 .color-export-research {
   color: #d7f1fa;
+}
+.fields-roll-up-title {
+  width: calc(100% - 145px) !important;
+}
+.fields-roll-up-checkbox {
+  width: 140px !important;
+  padding-left: 5px;
+  padding-right: 5px;
+  white-space: nowrap;
 }
 </style>
