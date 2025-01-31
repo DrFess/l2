@@ -51,6 +51,17 @@
               type="checkbox"
             > Глобальный
           </label>
+          <label
+            v-if="(ex_dep === 12 || simple) && fte && ex_dep !== 14"
+            class="input-group-addon"
+            for="rollup"
+          >
+            <input
+              id="rollup"
+              v-model="groupsRollUp"
+              type="checkbox"
+            >
+            Свернуть группы</label>
           <span
             v-if="(ex_dep === 12 || simple) && fte && ex_dep !== 14"
             class="input-group-btn"
@@ -84,16 +95,6 @@
           v-if="ex_dep !== 12 && ex_dep !== 13 && ex_dep !== 14 && ex_dep !== 15"
           class="input-group"
         >
-          <label
-            class="input-group-addon"
-            for="rollup"
-          >
-            <input
-              id="rollup"
-              v-model="groupRollUp"
-              type="checkbox"
-            >
-            Свернуть</label>
           <span class="input-group-addon">
             Краткое <small>(для направлений)</small>
           </span>
@@ -264,6 +265,16 @@
               {{ d[1] }}
             </option>
           </select>
+          <label
+            class="input-group-addon"
+            for="rollup"
+          >
+            <input
+              id="rollup"
+              v-model="groupsRollUp"
+              type="checkbox"
+            >
+            Свернуть группы</label>
           <label
             class="input-group-addon"
             style="height: 34px;text-align: left;"
@@ -631,7 +642,7 @@
               ></label>
             </div>
           </div>
-          <template v-if="!group.hide || group.display_hidden">
+          <template v-if="(!group.hide || group.display_hidden) && !groupsRollUp">
             <div>
               <strong>Поля ввода</strong>
             </div>
@@ -1375,7 +1386,7 @@ export default {
       timeoutOne: null,
       timeoutTwo: null,
       timeoutThree: null,
-      groupRollUp: false,
+      groupsRollUp: false,
     };
   },
   computed: {
