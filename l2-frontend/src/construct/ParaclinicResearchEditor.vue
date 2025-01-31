@@ -584,13 +584,17 @@
               v-model="group.title"
               type="text"
               class="form-control"
+              :class="group.hide? 'hide-background' : ''"
               placeholder="Название"
+              :disabled="group.hide"
             >
             <span class="input-group-addon">Условие видимости</span>
             <input
               v-model="group.visibility"
               type="text"
               class="form-control"
+              :class="group.hide? 'hide-background' : ''"
+              :disabled="group.hide"
               placeholder="Условие"
             >
             <span class="input-group-addon">CDA-отношение</span>
@@ -598,6 +602,8 @@
               <Treeselect
                 v-model="group.cdaOption"
                 class="treeselect-wide treeselect-noborder-left"
+                :class="group.hide? 'hide-treeselect' : ''"
+                :disabled="group.hide"
                 :multiple="false"
                 :disable-branch-nodes="true"
                 :options="cda_options"
@@ -2163,5 +2169,32 @@ export default {
   padding-left: 5px;
   padding-right: 5px;
   white-space: nowrap;
+}
+.hide-background {
+  background-image: linear-gradient(#6c7a89, #56616c);
+  color: #FFF;
+  border-color: #AAB2BD;
+}
+
+::v-deep .hide-treeselect .vue-treeselect {
+  &__control {
+    height: 34px !important;
+    background-image: linear-gradient(#6c7a89, #56616c);
+    color: #fff;
+    cursor: not-allowed;
+    border-color: #AAB2BD;
+  }
+  &__placehoder,
+  &__single-value {
+    background-image: linear-gradient(#6c7a89, #56616c);
+    color: #fff;
+    cursor: not-allowed;
+    line-height: 26px !important;
+  }
+}
+::v-deep .hide-treeselect .vue-treeselect {
+  &__placeholder {
+    line-height: 26px !important;
+  }
 }
 </style>
