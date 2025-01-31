@@ -616,8 +616,12 @@
                 v-model="group.show_title"
                 type="checkbox"
               ></label>
-              <label v-if="!group.hide"> Поля в одну строку<input
+              <label v-if="!group.hide"> Поля в одну строку <input
                 v-model="group.fieldsInline"
+                type="checkbox"
+              ></label>
+              <label v-if="!group.hide">Свернуть поля <input
+                v-model="group.fieldsRollUp"
                 type="checkbox"
               ></label>
               <div v-else>
