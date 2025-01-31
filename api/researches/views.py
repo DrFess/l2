@@ -1172,7 +1172,7 @@ def research_as_json(request):
     research_id = request.GET.get("researchId")
     groups_to_save = []
     research_data = {}
-    groups = ParaclinicInputGroups.objects.filter(research_id=research_id)
+    groups = ParaclinicInputGroups.objects.filter(research_id=research_id).order_by('order')
     r = Researches.objects.get(pk=research_id)
     for group in groups:
         fields_in_group = []
